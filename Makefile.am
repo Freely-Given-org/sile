@@ -189,12 +189,26 @@ _FORCED = $(and $(SILE_COVERAGE)$(CLEAN),force)
 _TEST_DEPS = $(and $$(filter tests/%,$@),$(addprefix .fonts/,$(TESTFONTFILES)))
 _DOCS_DEPS = $(and $$(filter documentation/%,$@),$(addprefix .fonts/,$(DOCSFONTFILES)))
 
-# TODO: remove _BUILT_SUBDIRS hack and replace it with something sensible when
-# these subdirs don't do crazy things like copying files outside of their own trees!
 _BUILT_SUBDIRS = .built-subdirs
-_SUBDIR_TELLS = core/justenoughfontconfig.so core/justenoughharfbuzz.so core/justenoughicu.so core/justenoughlibtexpdf.so libtexpdf/.libs/libtexpdf.so.0.0.0
+_LOCAL_LIBS += core/fontmetrics.@SHARED_LIB_EXT@
+_LOCAL_LIBS += core/justenoughfontconfig.@SHARED_LIB_EXT@
+_LOCAL_LIBS += core/justenoughharfbuzz.@SHARED_LIB_EXT@
+_LOCAL_LIBS += core/justenoughicu.@SHARED_LIB_EXT@
+_LOCAL_LIBS += core/justenoughlibtexpdf.@SHARED_LIB_EXT@
+_LOCAL_LIBS += core/svg.@SHARED_LIB_EXT@
+if APPKIT
+_LOCAL_LIBS += core/macfonts.@SHARED_LIB_EXT@
+endif
+
+core/%.so: src/.libs/%.so
+	cp $< $@
+
+core/%.so: libtexpdf/.libs/%.so
+	cp $< $@
+
 $(_BUILT_SUBDIRS): $(_SUBDIR_TELLS)
 	touch $@
+_LIBTEX_LIB = libtexpdf/.libs/libtexpdf.@SHARED_LIB_EXT@
 
 $(_SUBDIR_TELLS):
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
